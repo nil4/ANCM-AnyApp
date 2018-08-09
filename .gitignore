@@ -1,0 +1,11 @@
+[Oo]bj/
+[Bb]in/
+logs/
+.nuget/
+.vs/
+.vscode/
+*.sln.ide/
+_ReSharper.*/
+*.user
+*.suo
+*.cache
