@@ -1,11 +1,9 @@
-[Oo]bj/
 [Bb]in/
-logs/
-.nuget/
+[Oo]bj/
 .vs/
 .vscode/
-*.sln.ide/
-_ReSharper.*/
+
+launchSettings.json
+*.sln
 *.user
-*.suo
-*.cache
+*.log
