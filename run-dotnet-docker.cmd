@@ -1,6 +1,6 @@
 @echo off
 setlocal
-call "%~dp0ancmv2_extra\init.cmd" DOCKER_PATH docker.exe
+call "%~dp0_init.cmd" DOCKER_PATH docker.exe
 
 "%DOCKER_PATH%" build "%~dp0dotnet" -t "ancm-test-dotnet"
 
@@ -11,7 +11,7 @@ set LAUNCHER_ARGS=run --rm -p%ASPNETCORE_PORT%:80 --name "ancm-test-dotnet" ancm
 
 start http://localhost:50690/
 
-"%IISExpress%" /config:"%~dp0IISExpress.config" /trace:error
+"%IISExpress%" /config:"%~dp0ancmv2_extra\IISExpress.config" /trace:error
 
 echo.
 echo Stopping container 'ancm-test-dotnet'
