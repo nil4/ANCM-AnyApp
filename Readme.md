@@ -4,18 +4,18 @@ ANCM is architected as a generic reverse proxy, but a couple of implementation c
 currently limit its usefulness to only ASP.NET Core apps.
 
 The repository [`nil4/IISIntegration`](https://github.com/nil4/IISIntegration) contains
-an ANCM fork that adds a few ***opt-in*** settings to enable any other application to run with ANCM,
-and be provided access to the IIS authenticated user identity.
-The [`ancmv2_extra/Readme.md` file](https://github.com/nil4/ANCM-AnyApp/blob/master/ancmv2_extra/Readme.md) describes:
+an ANCM V2 fork that adds a few ***opt-in*** settings to enable any other application to run
+with ANCM, and be provided access to the IIS authenticated user identity.
+The [`ancmv2_extra/Readme.md`](https://github.com/nil4/ANCM-AnyApp/blob/master/ancmv2_extra/Readme.md) file describes:
 - the handshake protocol between ANCM and its backend app
-- the protocol used to [securely pass requests to the backend app](https://github.com/nil4/IISIntegration#security)
+- the protocol used to [securely pass requests to the backend app](https://github.com/nil4/ANCM-AnyApp/blob/master/ancmv2_extra/Readme.md#security)
 - the implications of the ANCM design choice to pass the IIS user identity (a Windows token/handle) to the backend app,
-which currently restricts its relevance to only ASP.NET Core apps
+which restricts its applicability to only ASP.NET Core apps
 
-It also describes a few extra features added by the ANCM fork.
+It also describes the few extra features added by the ANCM fork.
 
 This repository contains demo apps that use these extra ANCM features to show how
-*any other application type* (*in addition to* ASP.NET Core) could be hosted on IIS/Windows.
+*any other application type, in addition to* ASP.NET Core, could be hosted on IIS/Windows.
 
 > :warning: The **forked** ANCM binaries are stored in this repo,
 under [/ancmv2_extra](https://github.com/nil4/ANCM-AnyApp/tree/master/ancmv2_extra),
@@ -54,7 +54,7 @@ Things to note:
 - A greeting similar to: `Hello from NodeJS, YourDomain\UserName!` should be displayed
 
   IIS Express is configured to use Windows authentication, and the `forwardUserName="true"` setting
-  in [node/Web.config](https://github.com/nil4/ANCM-AnyApp/blob/master/node/Web.config) requests ANCM to
+  in [`node/Web.config`](https://github.com/nil4/ANCM-AnyApp/blob/master/node/Web.config) requests ANCM to
   pass the IIS authenticated user name to the NodeJS application as a request header.
 
 - Below the greeting, all request headers forwarded by ANCM are displayed, and among them you will find `ms-aspnetcore-user`.
@@ -107,7 +107,7 @@ Press <kbd>Q</kbd> in the console window to stop IIS Express before trying the n
 If you have [Python 3](https://www.python.org/) installed, start
 [`run-python.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/master/run-python.cmd) in a command prompt.
 
-Similar to the previous demo, this will launch [python/server.py](https://github.com/nil4/ANCM-AnyApp/blob/master/python/server.py)
+Similar to the previous demo, this will launch [`python/server.py`](https://github.com/nil4/ANCM-AnyApp/blob/master/python/server.py)
 under ANCM/IIS Express, and open `http://localhost:50690` in your browser.
 
 The Python demo has the same functionality as the NodeJS demo (including the ANCM security handshake protocol).
@@ -119,7 +119,7 @@ If you have [Docker for Windows](https://store.docker.com/editions/community/doc
 with experimental features enabled, i.e. LCOW ([Linux Containers on Windows](https://github.com/linuxkit/lcow)) available,
 start [`run-docker.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/master/run-docker.cmd) in a command prompt.
 
-This will pull the [paddycarey/go-echo](https://hub.docker.com/r/paddycarey/go-echo/) image (a very simple
+This will pull the [paddycarey/go-echo](https://hub.docker.com/r/paddycarey/go-echo/) image (a simple
 HTTP server, written in Go and running on Alpine Linux, that echoes request headers as a JSON-formatted response).
 
 It will then *hopefully* run the image under ANCM and IIS Express; the Docker LCOW support is still experimental,
@@ -184,12 +184,20 @@ Try the following:
 If you have Docker for Windows with LCOW support enabled,
 start [`run-dotnet-docker.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/master/run-dotnet-docker.cmd) in a command prompt.
 
-This will build and deploy `dotnet/TestANCM.csproj` to an Alpine Linux container image,
+This will build and deploy `dotnet/TestANCM.csproj` to an Alpine Linux container image
+using [`dotnet/Dockerfile`](https://github.com/nil4/ANCM-AnyApp/blob/master/dotnet/Dockerfile),
 then start the container under IIS Express/ANCM.
 
 In your browser, you should see similar output to the previous demo, but `HttpContext.User.Identity.Name` will
-be empty (an application running in a container cannot use a Windows user handle), while `Header[MS-ASPNETCORE-USER]`
-*will* have the correct value.
+be empty (expected, since an application running in a container cannot use a Windows user handle),
+while `Header[MS-ASPNETCORE-USER]` *will* have the correct user name.
+
+A more realistic example could be to run a .NET application in a Windows Docker container,
+under a [Group Managed Service Account identity](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/manage-serviceaccounts#how-it-works)
+that enables it to use integrated Windows authentication against SQL Server databases or other remote resources.
+In that scenario, the application running inside the container would still need to have access
+to the identity of the authenticated IIS user, and the `forwardUserName` setting would allow that.
+
 
 ### Python-under-WSL (failing)
 
