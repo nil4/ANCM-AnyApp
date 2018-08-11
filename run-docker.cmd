@@ -2,6 +2,8 @@
 setlocal
 call "%~dp0ancmv2_extra\init.cmd" DOCKER_PATH docker.exe
 
+"%DOCKER_PATH%" pull paddycarey/go-echo
+
 set ASPNETCORE_PORT=18000
 set IIS_SITE_PATH=%~dp0docker
 set LAUNCHER_PATH="%DOCKER_PATH%"
