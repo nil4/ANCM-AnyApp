@@ -122,8 +122,8 @@ start [`run-docker.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/master/run-doc
 This will pull the [paddycarey/go-echo](https://hub.docker.com/r/paddycarey/go-echo/) image (a simple
 HTTP server, written in Go and running on Alpine Linux, that echoes request headers as a JSON-formatted response).
 
-It will then *hopefully* run the image under ANCM and IIS Express; the Docker LCOW support is still experimental,
-after all; if all else fail, restart Docker for Windows, and set `stdoutLogEnabled="true"` in `docker/Web.config`,
+It will then *hopefully* run the image under ANCM and IIS Express (the Docker LCOW support is still experimental).
+If all else fail, restart Docker for Windows, and set `stdoutLogEnabled="true"` in `docker/Web.config`,
 which should create log files with hints about any issue.
 
 If it works, you should see a JSON response in your browser, with the ANCM-forwarded request headers,
@@ -137,23 +137,23 @@ Things to note:
   Fortunately, ANCM allows specifying the port to use (as opposed to generating a random port every time)
   through an environment variable.
 
-  Therefore, in this demo, the backend app port is be hardcoded in both
+  Therefore, in this demo, the backend app port has to be hardcoded in both
   [`run-docker.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/4c786184be6b90b782866c4c7844eb65c1ac80ad/run-docker.cmd#L5)
   and [`docker/Web.config`](https://github.com/nil4/ANCM-AnyApp/blob/4c786184be6b90b782866c4c7844eb65c1ac80ad/docker/Web.config#L19).
 
 - Note the `disableProcessIdCheck="true"` setting in [`docker/Web.config`](https://github.com/nil4/ANCM-AnyApp/blob/4c786184be6b90b782866c4c7844eb65c1ac80ad/docker/Web.config#L17)
 
-  This is a setting added by the ANCM fork, and is required here because ANCM version 2 expects the process *it* launched
+  This is a setting added by the ANCM fork, and is *required* here because ANCM version 2 expects the process *it* launched
   (or one of its child processes) to be listening on the configured port. However, while the user program `docker.exe`
   *triggers* a container to start, the running container is *actually hosted* by a system service
   (`com.docker.service`&mdash;the Docker daemon), and it is *this service* that actually opens the port that ANCM needs to proxy to.
 
   When the `disableProcessIdCheck` is set to `false` (the default value), ANCM will successfully launch `docker.exe`,
-  but then will time out trying to find the listening port (`18000`) attached to the `docker.exe` process, and
-  because there is no such port, it will eventually give up and consider the process launch failed.
+  but will then try to find the listening port (`18000`) attached to the `docker.exe` process. As the port is
+  actually hosted by `com.docker.service`, ANCM will eventually time out and declare the process launch failed.
 
   Setting `disableProcessIdCheck="true"` turns off this check, allowing ANCM to proxy to an existing port,
-  regardless of which process opens it.
+  regardless of *which process* owns it.
 
 - The `run-docker.cmd` file [explicitly stops](https://github.com/nil4/ANCM-AnyApp/blob/master/run-docker.cmd#L15-L16)
   the Docker container when IIS Express exits, to release the port it listens on.
@@ -186,18 +186,17 @@ start [`run-dotnet-docker.cmd`](https://github.com/nil4/ANCM-AnyApp/blob/master/
 
 This will build and deploy `dotnet/TestANCM.csproj` to an Alpine Linux container image
 using [`dotnet/Dockerfile`](https://github.com/nil4/ANCM-AnyApp/blob/master/dotnet/Dockerfile),
-then start the container under IIS Express/ANCM.
+and then attach to the running container under IIS Express/ANCM.
 
 In your browser, you should see similar output to the previous demo, but `HttpContext.User.Identity.Name` will
 be empty (expected, since an application running in a container cannot use a Windows user handle),
 while `Header[MS-ASPNETCORE-USER]` *will* have the correct user name.
 
-A more realistic example could be to run a .NET application in a Windows Docker container,
+A more realistic example would be to run a .NET application in a Windows Docker container,
 under a [Group Managed Service Account identity](https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/manage-serviceaccounts#how-it-works)
 that enables it to use integrated Windows authentication against SQL Server databases or other remote resources.
 In that scenario, the application running inside the container would still need to have access
-to the identity of the authenticated IIS user, and the `forwardUserName` setting would allow that.
-
+to the identity of the authenticated IIS user, and the `forwardUserName` setting enables that.
 
 ### Python-under-WSL (failing)
 
@@ -223,5 +222,5 @@ a cryptic message logged in `python-wsl/python-wsl_<date>_<pid>.log`:
 Error: 0x80070006
 ```
 
-This looks (at least vaguely) related to https://github.com/Microsoft/WSL/issues/2 
+This looks (at least remotely) related to https://github.com/Microsoft/WSL/issues/2 
 or https://github.com/Microsoft/WSL/issues/1259.
