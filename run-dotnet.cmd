@@ -3,6 +3,9 @@ setlocal
 call "%~dp0_init.cmd" DOTNET_PATH dotnet.exe
 
 "%DOTNET_PATH%" build "%~dp0dotnet"
+if %ERRORLEVEL% NEQ 0 (
+   exit /b 1
+)
 
 set ASPNETCORE_ENVIRONMENT=Development
 set IIS_SITE_PATH=%~dp0dotnet
