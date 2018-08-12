@@ -65,6 +65,11 @@ Commit https://github.com/nil4/IISIntegration/commit/cdbe1b56ff6c4d340fb0f19e4cd
 check that forces the backend application itself (or one of its children) to be listening on the port
 configured by the `ASPNETCORE_PORT` environment variable.
 
+Commit https://github.com/nil4/IISIntegration/commit/6659ab4e203875e878fc94f967cd62519536b642 restores
+the ANCM feature that replaces `%ASPNETCORE_PORT%` placeholders in the process arguments with the
+actual port value. This feature used to be available in earlier ANCM versions, but later 
+[regressed during a refactoring](https://github.com/aspnet/AspNetCoreModule/issues/117#issuecomment-311748366).
+
 > :information_source:
 > Set `forwardWindowsAuthToken` to `false` to disable the built-in ANCM V2 behaviour of sending the
 Windows user *handle* to the backend application.
