@@ -222,3 +222,6 @@ a cryptic message logged in `python-wsl/python-wsl_<date>_<pid>.log`:
 ```
 Error: 0x80070006
 ```
+
+This looks (at least vaguely) related to https://github.com/Microsoft/WSL/issues/2 
+or https://github.com/Microsoft/WSL/issues/1259.
