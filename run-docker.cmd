@@ -2,12 +2,14 @@
 setlocal
 call "%~dp0_init.cmd" DOCKER_PATH docker.exe
 
-"%DOCKER_PATH%" pull paddycarey/go-echo
+"%DOCKER_PATH%" run -i --rm -d --name "ancm-test" -p18000:8000 paddycarey/go-echo
+if %ERRORLEVEL% NEQ 0 (
+   exit /b 1
+)
 
-set ASPNETCORE_PORT=18000
 set IIS_SITE_PATH=%~dp0docker
 set LAUNCHER_PATH="%DOCKER_PATH%"
-set LAUNCHER_ARGS=run -i --rm -p%ASPNETCORE_PORT%:8000 --name "ancm-test" paddycarey/go-echo
+set LAUNCHER_ARGS=attach --no-stdin "ancm-test"
 
 start http://localhost:50690/
 
@@ -15,4 +17,4 @@ start http://localhost:50690/
 
 echo.
 echo Stopping container 'ancm-test'
-for /f "tokens=*" %%i in ('docker ps -aqf "name=ancm-test"') do docker.exe stop %%i
+for /f "tokens=*" %%i in ('docker ps -aqf "name=ancm-test"') do docker.exe rm -f %%i
